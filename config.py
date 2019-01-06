@@ -16,7 +16,7 @@ def argparser(is_train=True):
     parser.add_argument('--prefix', type=str, default='default')
     parser.add_argument('--train_dir', type=str)
     parser.add_argument('--checkpoint', type=str, default=None)
-    parser.add_argument('--dataset', type=str, default='CIFAR10', 
+    parser.add_argument('--dataset', type=str, default='MNIST', 
                         choices=['MNIST', 'SVHN', 'CIFAR10'])
     parser.add_argument('--dump_result', type=str2bool, default=False)
     # Model
