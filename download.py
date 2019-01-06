@@ -52,9 +52,9 @@ def check_file(data_dir):
 def download_mnist(download_path):
     data_dir = os.path.join(download_path, 'mnist')
 
-    if check_file(data_dir):
-        print('MNIST was downloaded.')
-        return
+#    if check_file(data_dir):
+#        print('MNIST was downloaded.')
+#        return
 
     data_url = 'http://yann.lecun.com/exdb/mnist/'
     keys = ['train-images-idx3-ubyte.gz', 'train-labels-idx1-ubyte.gz',
@@ -63,8 +63,8 @@ def download_mnist(download_path):
     for k in keys:
         url = (data_url+k).format(**locals())
         target_path = os.path.join(data_dir, k)
-        cmd = ['curl', url, '-o', target_path]
-        print('Downloading ', k)
+        #cmd = ['curl', url, '-o', target_path]
+        #print('Downloading ', k)
         #subprocess.call(cmd)
         cmd = ['gzip', '-d', target_path]
         print('Unzip ', k)
