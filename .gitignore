@@ -1,6 +1,6 @@
 train_dir/
 datasets/mnist
-
+nohup.out
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
