@@ -5,6 +5,7 @@ import subprocess
 import argparse
 import h5py
 import numpy as np
+import shutil
 
 def prepare_h5py(train_image, train_label, test_image, test_label, data_dir, shape=None):
 
@@ -40,32 +41,16 @@ def prepare_h5py(train_image, train_label, test_image, test_label, data_dir, sha
     data_id.close()
     return
 
-def check_file(data_dir):
-    if os.path.exists(data_dir):
-        if os.path.isfile(os.path.join('data.hdf5')) and \
-            os.path.isfile(os.path.join('id.txt')):
-            return True
-    else:
-        os.mkdir(data_dir)
-    return False
-
-def download_mnist(download_path):
+def preprocess(download_path):
     data_dir = os.path.join(download_path, 'mnist')
+    if not os.path.exists(data_dir): os.mkdir(data_dir)
 
-#    if check_file(data_dir):
-#        print('MNIST was downloaded.')
-#        return
-
-    data_url = 'http://yann.lecun.com/exdb/mnist/'
     keys = ['train-images-idx3-ubyte.gz', 'train-labels-idx1-ubyte.gz',
              't10k-images-idx3-ubyte.gz', 't10k-labels-idx1-ubyte.gz']
 
     for k in keys:
-        url = (data_url+k).format(**locals())
         target_path = os.path.join(data_dir, k)
-        #cmd = ['curl', url, '-o', target_path]
-        #print('Downloading ', k)
-        #subprocess.call(cmd)
+        shutil.copyfile(os.path.join(download_path, k),target_path)
         cmd = ['gzip', '-d', target_path]
         print('Unzip ', k)
         subprocess.call(cmd)
@@ -98,5 +83,4 @@ def download_mnist(download_path):
 if __name__ == '__main__':
     path = './datasets'
     if not os.path.exists(path): os.mkdir(path)
-
-    download_mnist('./datasets')
+    preprocess('./datasets')
