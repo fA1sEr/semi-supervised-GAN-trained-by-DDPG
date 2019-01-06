@@ -1,7 +1,6 @@
 train_dir/
 datasets/mnist
-datasets/svhn
-datasets/cifar10
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

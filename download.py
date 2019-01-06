@@ -65,7 +65,7 @@ def download_mnist(download_path):
         target_path = os.path.join(data_dir, k)
         cmd = ['curl', url, '-o', target_path]
         print('Downloading ', k)
-        subprocess.call(cmd)
+        #subprocess.call(cmd)
         cmd = ['gzip', '-d', target_path]
         print('Unzip ', k)
         subprocess.call(cmd)
