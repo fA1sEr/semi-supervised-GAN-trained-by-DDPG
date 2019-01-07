@@ -150,13 +150,12 @@ class Trainer(object):
                  self.model.all_preds, self.model.all_targets, 
                  self.model.fake_image]
         
-#        if step % (self.config.update_rate+1) > 0:
-#        # Train the generator
+        if step % (self.config.update_rate+1) > 0:
+        # Train the generator
 #            fetch.append(self.g_optimizer)
-#        else:
-#        # Train the discriminator
-#            fetch.append(self.d_optimizer)
-        fetch.append(self.d_optimizer)
+        else:
+        # Train the discriminator
+            fetch.append(self.d_optimizer)
         
         fetch_values = self.session.run(fetch,
             feed_dict=self.model.get_feed_dict(batch_chunk, step=step)
