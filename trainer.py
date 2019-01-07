@@ -206,6 +206,8 @@ class Trainer(object):
 
 def main():
 
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
     config, model, dataset_train, dataset_test = argparser(is_train=True)
 
     trainer = Trainer(config, model, dataset_train, dataset_test)
