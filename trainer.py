@@ -153,6 +153,7 @@ class Trainer(object):
         if step % (self.config.update_rate+1) > 0:
         # Train the generator
 #            fetch.append(self.g_optimizer)
+            for_indent = 1
         else:
         # Train the discriminator
             fetch.append(self.d_optimizer)
