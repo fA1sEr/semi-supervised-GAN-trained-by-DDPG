@@ -21,3 +21,10 @@ Test models with saved checkpoints:
 $ python evaler.py --checkpoint ckpt_dir
 ```
 The *ckpt_dir* should be like: ```train_dir/default-MNIST_lr_0.0001_update_G5_D1-20170101-194957/model-1001```
+
+
+可视化：
+```bash
+$ tensorboard --logdir=train_dir
+```
+然后用浏览器访问 "服务器地址:6006"
