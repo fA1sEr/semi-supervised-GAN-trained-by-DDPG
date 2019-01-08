@@ -156,6 +156,8 @@ class Evaler(object):
 
 def main():
 
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+
     config, model, dataset_train, dataset_test = argparser(is_train=False)
 
     evaler = Evaler(config, model, dataset_test)
