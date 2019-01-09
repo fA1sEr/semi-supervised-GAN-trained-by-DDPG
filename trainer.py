@@ -17,6 +17,7 @@ from config import argparser
 
 from ReplayBuffer import ReplayBuffer
 import random
+import numpy as np
 
 class Trainer(object):
 
@@ -143,8 +144,7 @@ class Trainer(object):
     def run_single_step(self, batch, step=None, is_train=True):
         _start_time = time.time()
 
-        states = tf.random_uniform([self.config.batch_size, self.config.n_z],
-                              minval=-1, maxval=1, dtype=tf.float32)
+        states = np.random.uniform(-1,1,[self.config.batch_size, self.config.n_z])
         real_images = self.session.run(batch)
         actions = self.session.run(self.model.g_output, feed_dict={self.model.z:states})
         
