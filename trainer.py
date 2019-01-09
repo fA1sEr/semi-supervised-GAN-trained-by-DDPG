@@ -169,7 +169,7 @@ class Trainer(object):
         fetch_values = self.session.run(fetch,feed_dict0)
 
         self.session.run(self.g_optimizer,
-            feed_dict={self.model.z: batch_chunk[:,0]}
+            feed_dict={self.model.z: np.asarray([e[0] for e in batch_chunk])}
         )
 
         [step, loss, summary, d_loss, g_loss, \
