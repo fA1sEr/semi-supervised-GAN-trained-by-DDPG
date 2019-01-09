@@ -98,7 +98,7 @@ class Model(object):
         G = Generator('Generator', self.h, self.w, self.c,
                       self.norm_type, self.deconv_type, is_train)
         self.z = tf.placeholder(name='z', dtype=tf.float32, shape=[self.batch_size, self.n_z])
-        fake_image = G(z)
+        fake_image = G(self.z)
         self.fake_image = fake_image
         # }}}
 
