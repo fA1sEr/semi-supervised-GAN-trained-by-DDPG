@@ -184,10 +184,13 @@ class Trainer(object):
 
         batch_chunk = self.session.run(batch)
 
+        feed_dict0 = self.model.get_feed_dict(batch_chunk, is_training=False)
+        feed_dict0[self.model.z] = np.random.uniform(-1,1,[self.config.batch_size, self.config.n_z])
+
         [accuracy, d_loss, g_loss, s_loss] = self.session.run(
             [self.model.accuracy, self.model.d_loss, 
              self.model.g_loss, self.model.S_loss],
-            feed_dict=self.model.get_feed_dict(batch_chunk, is_training=False))
+            feed_dict=feed_dict0)
 
         _end_time = time.time()
 
