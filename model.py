@@ -112,8 +112,7 @@ class Model(object):
         # }}}
 
         # for policy gradient
-        d_output, d_output_logits = D(self.d_input)
-        self.d_output_q = d_output[:,-1]
+        self.d_output_q = d_fake[:,-1]
         self.g_output = fake_image
         self.g_weights = G.var_list
 
