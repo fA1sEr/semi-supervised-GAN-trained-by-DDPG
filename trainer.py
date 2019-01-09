@@ -161,13 +161,13 @@ class Trainer(object):
                  self.model.all_preds, self.model.all_targets, 
                  self.model.fake_image]
 
-        fetch.append(d_optimizer)
+        fetch.append(self.d_optimizer)
 
         fetch_values = self.session.run(fetch,
             feed_dict=self.model.get_feed_dict(real_images, step=step)
         )
 
-        self.session.run(g_optimizer,
+        self.session.run(self.g_optimizer,
             feed_dict={self.model.z: batch_chunk[:,0]}
         )
 
