@@ -152,7 +152,7 @@ class Trainer(object):
             if random.random() > self.config.real_probability:
                 self.buffer.add(states[i], actions[i], 0)
             else:
-                self.buffer.add(states[i], real_images[i], 1)
+                self.buffer.add(states[i], real_images['image'][i], 1)
 
         batch_chunk = self.buffer.getBatch(self.batch_size)
 
