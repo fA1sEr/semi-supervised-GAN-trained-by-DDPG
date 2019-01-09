@@ -163,9 +163,10 @@ class Trainer(object):
 
         fetch.append(self.d_optimizer)
 
-        fetch_values = self.session.run(fetch,
-            feed_dict=self.model.get_feed_dict(real_images, step=step)
-        )
+        feed_dict0 = self.model.get_feed_dict(real_images, step=step)
+        feed_dict0[self.model.z] = np.random.uniform(-1,1,[self.config.batch_size, self.config.n_z])
+
+        fetch_values = self.session.run(fetch,feed_dict0)
 
         self.session.run(self.g_optimizer,
             feed_dict={self.model.z: batch_chunk[:,0]}
