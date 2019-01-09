@@ -39,6 +39,8 @@ class Model(object):
 
         self.is_training = tf.placeholder_with_default(bool(is_train), [], name='is_training')
 
+        self.z = tf.placeholder(name='z', dtype=tf.float32, shape=[self.batch_size, self.n_z])
+
         self.recon_weight = tf.placeholder_with_default(
             tf.cast(1.0, tf.float32), [])
         tf.summary.scalar("loss/recon_wieght", self.recon_weight)
@@ -97,7 +99,7 @@ class Model(object):
         # =========
         G = Generator('Generator', self.h, self.w, self.c,
                       self.norm_type, self.deconv_type, is_train)
-        self.z = tf.placeholder(name='z', dtype=tf.float32, shape=[self.batch_size, self.n_z])
+                      
         fake_image = G(self.z)
         self.fake_image = fake_image
         # }}}
