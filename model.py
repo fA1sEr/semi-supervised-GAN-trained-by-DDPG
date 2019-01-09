@@ -97,8 +97,7 @@ class Model(object):
         # =========
         G = Generator('Generator', self.h, self.w, self.c,
                       self.norm_type, self.deconv_type, is_train)
-        z = tf.random_uniform([self.batch_size, self.n_z],
-                              minval=-1, maxval=1, dtype=tf.float32)
+        self.z = tf.placeholder(name='z', dtype=tf.float32, shape=[self.batch_size, self.n_z])
         fake_image = G(z)
         self.fake_image = fake_image
         # }}}
@@ -111,6 +110,12 @@ class Model(object):
         self.all_preds = d_real
         self.all_targets = self.label
         # }}}
+
+        # for policy gradient
+        d_output, d_output_logits = D(self.d_input)
+        self.d_output_q = d_output[:,-1]
+        self.g_output = fake_image
+        self.g_weights = G.var_list
 
         self.S_loss, d_loss_real, d_loss_fake, self.d_loss, self.g_loss, GAN_loss, self.accuracy = \
             build_loss(d_real, d_real_logits, d_fake, d_fake_logits, self.label, self.image, fake_image)

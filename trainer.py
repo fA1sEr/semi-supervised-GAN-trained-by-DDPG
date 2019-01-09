@@ -15,6 +15,8 @@ from input_ops import create_input_ops
 from util import log
 from config import argparser
 
+from ReplayBuffer import ReplayBuffer
+import random
 
 class Trainer(object):
 
@@ -70,15 +72,11 @@ class Trainer(object):
             variables=d_var
         )
 
-        self.g_optimizer = tf.contrib.layers.optimize_loss(
-            loss=self.model.g_loss,
-            global_step=self.global_step,
-            learning_rate=self.config.learning_rate_g,
-            optimizer=tf.train.AdamOptimizer(beta1=0.5),
-            clip_gradients=20.0,
-            name='g_optimize_loss',
-            variables=g_var
-        )
+        # for policy gradient
+        self.action_grads = tf.gradients(self.model.d_output_q, self.model.fake_image)
+        self.params_grad = tf.gradients(self.model.g_output, self.model.g_weights, self.action_grads)
+        grads = zip(self.params_grad, self.model.g_weights)
+        self.g_optimizer = tf.train.AdamOptimizer(self.config.learning_rate_g).apply_gradients(grads)
 
         self.summary_op = tf.summary.merge_all()
 
@@ -108,6 +106,8 @@ class Trainer(object):
             log.info("Checkpoint path: %s", self.ckpt_path)
             self.saver.restore(self.session, self.ckpt_path)
             log.info("Loaded the pretrain parameters from the provided checkpoint path")
+
+        self.buffer = ReplayBuffer(config.buffer_size)
 
     def train(self):
         log.infov("Training Starts!")
@@ -143,22 +143,32 @@ class Trainer(object):
     def run_single_step(self, batch, step=None, is_train=True):
         _start_time = time.time()
 
-        batch_chunk = self.session.run(batch)
+        states = tf.random_uniform([self.config.batch_size, self.config.n_z],
+                              minval=-1, maxval=1, dtype=tf.float32)
+        real_images = self.session.run(batch)
+        actions = self.session.run(self.model.g_output, feed_dict={self.model.z:states})
+        
+        for i in range(self.config.batch_size):
+            if random.random() > self.config.real_probability:
+                self.buffer.add(states[i], actions[i], 0)
+            else:
+                self.buffer.add(states[i], real_images[i], 1)
+
+        batch_chunk = self.buffer.getBatch(self.batch_size)
 
         fetch = [self.global_step, self.model.accuracy, self.summary_op, 
                  self.model.d_loss, self.model.g_loss, self.model.S_loss, 
                  self.model.all_preds, self.model.all_targets, 
                  self.model.fake_image]
 
-        if step % (self.config.update_rate+1) > 0:
-        # Train the generator
-            fetch.append(self.g_optimizer)
-        else:
-        # Train the discriminator
-            fetch.append(self.d_optimizer)
+        fetch.append(d_optimizer)
 
         fetch_values = self.session.run(fetch,
-            feed_dict=self.model.get_feed_dict(batch_chunk, step=step)
+            feed_dict=self.model.get_feed_dict(real_images, step=step)
+        )
+
+        self.session.run(g_optimizer,
+            feed_dict={self.model.z: batch_chunk[:,0]}
         )
 
         [step, loss, summary, d_loss, g_loss, \

@@ -42,6 +42,8 @@ def argparser(is_train=True):
     parser.add_argument('--learning_rate_g', type=float, default=1e-4)
     parser.add_argument('--learning_rate_d', type=float, default=1e-4)
     parser.add_argument('--update_rate', type=int, default=1)
+    parser.add_argument('--buffer_size', type=int, default=100000)
+    parser.add_argument('--real_probability', type=float, default=0.5)
     # }}}
 
     # Testing config {{{
