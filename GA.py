@@ -3,7 +3,7 @@ import random
 import tensorflow as tf
 class Genetic_algorithm(object):
     def __init__(self):
-        self.generations = 8 # Number of times to evolve the population.
+        self.generations = 50 # Number of times to evolve the population.
         self.population = 5  # Number of genomes in each generation.
         self.fraction_best_kept = 0.5
         self.mutate = 0.3
