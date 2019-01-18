@@ -16,6 +16,8 @@ from GA import Genetic_algorithm
 from ReplayBuffer import ReplayBuffer
 import random
 import numpy as np
+from model import Model
+
 
 # to choose gpu
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
