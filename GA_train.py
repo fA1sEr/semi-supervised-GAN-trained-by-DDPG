@@ -153,8 +153,7 @@ def GA_train(population):
         print("population ", i)
         print(population.ix[i])
         tf.reset_default_graph()
-        config, _1, _2, _3 = argparser(is_train=True)
-        config.learning_rate_g = population.ix[i]["learning_rate_g"]
+        config, model, dataset_train, dataset_test = argparser(is_train=True)        config.learning_rate_g = population.ix[i]["learning_rate_g"]
         config.learning_rate_d = population.ix[i]["learning_rate_d"]
         config.update_rate = population.ix[i]["update_rate"]
         config.batch_size = population.ix[i]["batch_size"]
@@ -162,7 +161,8 @@ def GA_train(population):
         config.buffer_size = population.ix[i]["buffer_size"]
         config.real_probability = population.ix[i]["real_probability"]
 
-        config, model, dataset_train, dataset_test = argparser(is_train=True)
+        model = Model(config, debug_information=config.debug, is_train=True)
+
         trainer = Trainer(config, model, dataset_train, dataset_test)
 
         population.loc[i, "accuracy_score"] = trainer.run_GA()
