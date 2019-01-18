@@ -64,15 +64,11 @@ class Trainer(object):
             variables=d_var
         )
 
-        self.g_optimizer = tf.contrib.layers.optimize_loss(
-            loss=self.model.g_loss,
-            global_step=self.global_step,
-            learning_rate=self.config.learning_rate_g,
-            optimizer=tf.train.AdamOptimizer(beta1=0.5),
-            clip_gradients=20.0,
-            name='g_optimize_loss',
-            variables=g_var
-        )
+        # for policy gradient
+        self.action_grads = tf.gradients(self.model.d_output_q, self.model.fake_image)
+        self.params_grad = tf.gradients(self.model.g_output, self.model.g_weights, self.action_grads)
+        grads = zip(self.params_grad, self.model.g_weights)
+        self.g_optimizer = tf.train.AdamOptimizer(self.config.learning_rate_g).apply_gradients(grads)
 
         self.summary_op = tf.summary.merge_all()
 
@@ -98,25 +94,38 @@ class Trainer(object):
         )
         self.session = self.supervisor.prepare_or_wait_for_session(config=session_config)
 
+        self.buffer = ReplayBuffer(config.buffer_size)
+
     def GA_run_single_step(self, batch, step=None, is_train=True):
 
-        batch_chunk = self.session.run(batch)
+        states = np.random.uniform(-1,1,[self.config.batch_size, self.config.n_z])
+        real_images = self.session.run(batch)
+        actions = self.session.run(self.model.g_output, feed_dict={self.model.z:states})
+        
+        for i in range(self.config.batch_size):
+            if random.random() > self.config.real_probability:
+                self.buffer.add(states[i], actions[i], 0)
+            else:
+                self.buffer.add(states[i], real_images['image'][i], 1)
+
+        batch_chunk = self.buffer.getBatch(self.batch_size)
 
         fetch = [self.global_step, self.model.accuracy, self.summary_op,
                  self.model.d_loss, self.model.g_loss, self.model.S_loss,
                  self.model.all_preds, self.model.all_targets,
                  self.model.fake_image]
 
-        if step % (self.config.update_rate + 1) > 0:
-            # Train the generator
-            fetch.append(self.g_optimizer)
-        else:
-            # Train the discriminator
-            fetch.append(self.d_optimizer)
+        fetch.append(self.d_optimizer)
 
-        fetch_values = self.session.run(fetch,
-                                        feed_dict=self.model.get_feed_dict(batch_chunk, step=step)
-                                        )
+        feed_dict0 = self.model.get_feed_dict(real_images, step=step)
+        feed_dict0[self.model.z] = np.random.uniform(-1,1,[self.config.batch_size, self.config.n_z])
+        
+
+        fetch_values = self.session.run(fetch,feed_dict0)
+
+        self.session.run(self.g_optimizer,
+            feed_dict={self.model.z: np.asarray([e[0] for e in batch_chunk])}
+        )
 
         [step, loss, summary, d_loss, g_loss, s_loss, all_preds, all_targets, g_img] = fetch_values[:9]
 
@@ -128,8 +137,8 @@ class Trainer(object):
         mean_accuracy = 0.0
         for s in range(1000):
             accuracy = self.GA_run_single_step(self.batch_train, step=s)
-
             mean_accuracy += accuracy
+
         print("run-GA Done")
         print("mean-accuracy=",mean_accuracy/1000.0)
         return mean_accuracy / 1000.0
@@ -144,6 +153,10 @@ def GA_train(population):
         config.learning_rate_g = population.ix[i]["learning_rate_g"]
         config.learning_rate_d = population.ix[i]["learning_rate_d"]
         config.update_rate = population.ix[i]["update_rate"]
+        config.batch_size = population.ix[i]["batch_size"]
+        config.n_z = population.ix[i]["n_z"]
+        config.buffer_size = population.ix[i]["buffer_size"]
+        config.real_probability = population.ix[i]["real_probability"]
         trainer = Trainer(config, model, dataset_train, dataset_test)
 
         population.loc[i, "accuracy_score"] = trainer.run_GA()
@@ -158,7 +171,7 @@ def GA_selection(population, GA):
 
     mothers = survivors.iloc[survivors.index % 2 == 0].reset_index(drop=True)
     fathers = survivors.iloc[survivors.index % 2 == 1].reset_index(drop=True)
-    next_generation = pd.DataFrame(columns=["learning_rate_g", "learning_rate_d", "update_rate", "accuracy_score"])
+    next_generation = pd.DataFrame(columns=["learning_rate_g", "learning_rate_d", "update_rate", "batch_size", "n_z", "buffer_size", "real_probability", "accuracy_score"])
 
     for i in range(population.shape[0]):
         for j in range(population.shape[1] - 1):
