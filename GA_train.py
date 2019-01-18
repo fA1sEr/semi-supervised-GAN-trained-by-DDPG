@@ -13,6 +13,10 @@ from util import log
 from config import argparser
 from GA import Genetic_algorithm
 
+from ReplayBuffer import ReplayBuffer
+import random
+import numpy as np
+
 # to choose gpu
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
